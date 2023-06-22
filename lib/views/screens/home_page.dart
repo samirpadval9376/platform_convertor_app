@@ -226,6 +226,8 @@ class HomePage extends StatelessWidget {
                       //   ),
                       // ),
                       title: Text("${Globals.allContacts[index].fullName}"),
+                      subtitle:
+                          Text("+91 ${Globals.allContacts[index].contact}"),
                     ),
                   ),
                 ),
