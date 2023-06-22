@@ -1,7 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:platform_convertor_app/controllers/platform_controller.dart';
 import 'package:platform_convertor_app/controllers/profile_controller.dart';
 import 'package:platform_convertor_app/controllers/theme_controller.dart';
+import 'package:platform_convertor_app/modals/contact_modal.dart';
+import 'package:platform_convertor_app/modals/globals.dart';
 import 'package:provider/provider.dart';
 
 import '../../modals/profile_modal.dart';
@@ -9,7 +13,11 @@ import '../../modals/profile_modal.dart';
 class HomePage extends StatelessWidget {
   HomePage({Key? key}) : super(key: key);
 
-  String? name;
+  String? fullName;
+  String? contact;
+  String? chat;
+  File? image;
+  GlobalKey<FormState> formkey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +76,7 @@ class HomePage extends StatelessWidget {
                 width: s.width,
                 alignment: Alignment.center,
                 child: Form(
+                  key: formkey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -91,6 +100,16 @@ class HomePage extends StatelessWidget {
                           ),
                           border: const OutlineInputBorder(),
                         ),
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return "Enter the name";
+                          } else {
+                            return null;
+                          }
+                        },
+                        onSaved: (val) {
+                          fullName = val;
+                        },
                       ),
                       SizedBox(
                         height: s.height * 0.02,
@@ -106,6 +125,16 @@ class HomePage extends StatelessWidget {
                           ),
                           border: const OutlineInputBorder(),
                         ),
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return "Enter the number";
+                          } else {
+                            return null;
+                          }
+                        },
+                        onSaved: (val) {
+                          contact = val;
+                        },
                       ),
                       SizedBox(
                         height: s.height * 0.02,
@@ -121,6 +150,16 @@ class HomePage extends StatelessWidget {
                           ),
                           border: const OutlineInputBorder(),
                         ),
+                        validator: (val) {
+                          if (val!.isEmpty) {
+                            return "Enter the chat";
+                          } else {
+                            return null;
+                          }
+                        },
+                        onSaved: (val) {
+                          chat = val!;
+                        },
                       ),
                       SizedBox(
                         height: s.height * 0.02,
@@ -154,7 +193,19 @@ class HomePage extends StatelessWidget {
                         height: s.height * 0.02,
                       ),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          if (formkey.currentState!.validate()) {
+                            formkey.currentState!.save();
+                            Globals.allContacts.add(
+                              Contact(
+                                fullName: fullName!,
+                                contact: contact,
+                                chat: chat,
+                              ),
+                            );
+                          }
+                          debugPrint("$fullName");
+                        },
                         child: const Text("SAVE"),
                       ),
                     ],
@@ -162,7 +213,23 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               Container(),
-              Container(),
+              Container(
+                width: s.width,
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: ListView.builder(
+                    itemCount: Globals.allContacts.length,
+                    itemBuilder: (context, index) => ListTile(
+                      // leading: CircleAvatar(
+                      //   foregroundImage: FileImage(
+                      //     Globals.allContacts[index].image!,
+                      //   ),
+                      // ),
+                      title: Text("${Globals.allContacts[index].fullName}"),
+                    ),
+                  ),
+                ),
+              ),
               Container(
                 width: s.width,
                 child: Column(
@@ -231,11 +298,25 @@ class HomePage extends StatelessWidget {
                                 SizedBox(
                                   height: s.height * 0.01,
                                 ),
-                                const Text("Enter your name..."),
+                                Container(
+                                  child: TextFormField(
+                                    decoration: InputDecoration(
+                                      hintText: "Enter your name",
+                                      border: OutlineInputBorder(
+                                          borderSide: BorderSide.none),
+                                    ),
+                                  ),
+                                ),
                                 SizedBox(
                                   height: s.height * 0.03,
                                 ),
-                                const Text("Enter your bio..."),
+                                TextFormField(
+                                  decoration: InputDecoration(
+                                    hintText: "Enter your name",
+                                    border: OutlineInputBorder(
+                                        borderSide: BorderSide.none),
+                                  ),
+                                ),
                                 SizedBox(
                                   height: s.height * 0.03,
                                 ),
