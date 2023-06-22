@@ -1,9 +1,20 @@
 import 'package:flutter/cupertino.dart';
 import 'package:platform_convertor_app/controllers/platform_controller.dart';
+import 'package:platform_convertor_app/views/screens/add_contact_page.dart';
+import 'package:platform_convertor_app/views/screens/call_page.dart';
+import 'package:platform_convertor_app/views/screens/chat_page.dart';
+import 'package:platform_convertor_app/views/screens/profile_page.dart';
 import 'package:provider/provider.dart';
 
 class IosHomePage extends StatelessWidget {
-  const IosHomePage({Key? key}) : super(key: key);
+  IosHomePage({Key? key}) : super(key: key);
+
+  final List tabs = [
+    const AddContactPage(),
+    const ChatPage(),
+    const CallPage(),
+    const ProfilePage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +33,33 @@ class IosHomePage extends StatelessWidget {
           ),
         ),
       ),
-      child: Center(),
+      child: CupertinoTabScaffold(
+        tabBar: CupertinoTabBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.person_add),
+              label: "Add",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.chat_bubble),
+              label: "Chat",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.phone),
+              label: "Call",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.settings),
+              label: "Settings",
+            ),
+          ],
+        ),
+        tabBuilder: (context, index) {
+          return CupertinoTabView(
+            builder: (context) => tabs[index],
+          );
+        },
+      ),
     );
   }
 }
