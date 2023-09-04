@@ -2,12 +2,16 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:platform_convertor_app/controllers/contact_controlller.dart';
+import 'package:platform_convertor_app/controllers/date_time_controller.dart';
 import 'package:platform_convertor_app/controllers/platform_controller.dart';
 import 'package:platform_convertor_app/controllers/profile_controller.dart';
 import 'package:platform_convertor_app/controllers/theme_controller.dart';
 import 'package:platform_convertor_app/modals/contact_modal.dart';
 import 'package:platform_convertor_app/modals/globals.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../modals/profile_modal.dart';
 
@@ -27,12 +31,12 @@ class HomePage extends StatelessWidget {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: const Text(
             "Platform Convertor",
             style: TextStyle(
               fontSize: 22,
-              color: Colors.black,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -70,7 +74,7 @@ class HomePage extends StatelessWidget {
           ],
         ),
         body: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(10),
           child: TabBarView(
             children: [
               SingleChildScrollView(
@@ -222,81 +226,143 @@ class HomePage extends StatelessWidget {
                           },
                         ),
                         SizedBox(
-                          height: s.height * 0.02,
+                          height: s.height * 0.01,
                         ),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.calendar_month_outlined,
-                            ),
-                            SizedBox(
-                              width: s.width * 0.02,
-                            ),
-                            const Text("Pick Date"),
-                          ],
-                        ),
-                        SizedBox(
-                          height: s.height * 0.02,
-                        ),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.access_time,
-                            ),
-                            SizedBox(
-                              width: s.width * 0.02,
-                            ),
-                            const Text("Pick Time"),
-                          ],
-                        ),
-                        SizedBox(
-                          height: s.height * 0.02,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (formkey.currentState!.validate()) {
-                              formkey.currentState!.save();
-                              Globals.allContacts.add(
-                                Contact(
-                                  fullName: fullName!,
-                                  contact: contact,
-                                  chat: chat,
+                        Consumer<DateTimeController>(
+                          builder: (context, provider, child) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  onPressed: () async {
+                                    DateTime? d = await showDatePicker(
+                                      context: context,
+                                      initialDate: provider.dateTime!,
+                                      firstDate: DateTime(2023),
+                                      lastDate: DateTime.now().add(
+                                        const Duration(
+                                          days: 1,
+                                        ),
+                                      ),
+                                    );
+
+                                    if (d != null) {
+                                      provider.dateChanged(date: d);
+                                    }
+                                  },
+                                  icon: const Icon(Icons.calendar_month),
                                 ),
-                              );
-                            }
-                            debugPrint("$fullName");
+                                const Text("Pick Date"),
+                                SizedBox(
+                                  width: s.width * 0.44,
+                                ),
+                                Text(
+                                    "${provider.dateTime!.day}/${provider.dateTime!.month}/${provider.dateTime!.year}"),
+                              ],
+                            );
                           },
-                          child: const Text("SAVE"),
                         ),
+                        Consumer<DateTimeController>(
+                          builder: (context, provider, child) {
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  onPressed: () async {
+                                    TimeOfDay? time = await showTimePicker(
+                                      context: context,
+                                      initialTime: provider.timeOfDay!,
+                                    );
+
+                                    provider.timeChanged(time: time!);
+                                  },
+                                  icon: const Icon(Icons.access_time),
+                                ),
+                                const Text("Pick Time"),
+                                SizedBox(
+                                  width: s.width * 0.44,
+                                ),
+                                Text(
+                                    "${provider.timeOfDay!.hour}/${provider.dateTime!.minute}"),
+                              ],
+                            );
+                          },
+                        ),
+                        SizedBox(
+                          height: s.height * 0.02,
+                        ),
+                        Consumer<ContactController>(
+                            builder: (context, provider, child) {
+                          return ElevatedButton(
+                            onPressed: () async {
+                              if (formkey.currentState!.validate()) {
+                                formkey.currentState!.save();
+
+                                Directory? dir =
+                                    await getExternalStorageDirectory();
+
+                                File imagePath =
+                                    await Provider.of<PlatformController>(
+                                            context,
+                                            listen: false)
+                                        .image!
+                                        .copy("${dir!.path}/$fullName.jpg");
+
+                                provider.addContact(
+                                  contact: Contact(
+                                    fullName: fullName,
+                                    contact: contact,
+                                    chat: chat,
+                                    image: imagePath.path,
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text("SAVE"),
+                          );
+                        }),
                       ],
                     ),
                   ),
                 ),
               ),
               Container(),
-              Container(
+              SizedBox(
                 width: s.width,
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: ListView.builder(
-                    itemCount: Globals.allContacts.length,
+                child: Consumer<ContactController>(
+                    builder: (context, provider, child) {
+                  return ListView.builder(
+                    itemCount: provider.getAllContacts.length,
                     itemBuilder: (context, index) => ListTile(
-                      // leading: Consumer<PlatformController>(
-                      //     builder: (context, provider, child) {
-                      //   return CircleAvatar(
-                      //     foregroundImage: FileImage(
-                      //       provider.image!,
-                      //     ),
-                      //   );
-                      // }),
-                      title: Text("${Globals.allContacts[index].fullName}"),
+                      leading: CircleAvatar(
+                        radius: 30,
+                        foregroundImage: FileImage(
+                          File(
+                            provider.getAllContacts[index].image!,
+                          ),
+                        ),
+                      ),
+                      title: Text("${provider.getAllContacts[index].fullName}"),
                       subtitle:
-                          Text("+91 ${Globals.allContacts[index].contact}"),
+                          Text("+91 ${provider.getAllContacts[index].contact}"),
+                      trailing: IconButton(
+                        onPressed: () async {
+                          Uri uri = Uri(
+                            scheme: 'tel',
+                            path: provider.getAllContacts[index].contact,
+                          );
+                          await launchUrl(uri);
+                        },
+                        icon: const Icon(
+                          Icons.call,
+                          color: Colors.green,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                }),
               ),
-              Container(
+              SizedBox(
                 width: s.width,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -311,17 +377,17 @@ class HomePage extends StatelessWidget {
                           Icons.person,
                         ),
                         const Spacer(),
-                        Column(
+                        const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "Profile",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const Text(
+                            Text(
                               "Update Profile Data",
                               style: TextStyle(
                                 fontSize: 12,
@@ -355,9 +421,9 @@ class HomePage extends StatelessWidget {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                CircleAvatar(
+                                const CircleAvatar(
                                   radius: 70,
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.add_a_photo_outlined,
                                   ),
                                 ),
@@ -365,26 +431,32 @@ class HomePage extends StatelessWidget {
                                   height: s.height * 0.01,
                                 ),
                                 Container(
+                                  height: s.height * 0.05,
+                                  width: s.width * 0.4,
+                                  alignment: Alignment.center,
                                   child: TextFormField(
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                       hintText: "Enter your name",
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  height: s.height * 0.05,
+                                  width: s.width * 0.4,
+                                  alignment: Alignment.center,
+                                  child: TextFormField(
+                                    decoration: const InputDecoration(
+                                      hintText: "Enter your bio",
                                       border: OutlineInputBorder(
                                           borderSide: BorderSide.none),
                                     ),
                                   ),
                                 ),
                                 SizedBox(
-                                  height: s.height * 0.03,
-                                ),
-                                TextFormField(
-                                  decoration: InputDecoration(
-                                    hintText: "Enter your name",
-                                    border: OutlineInputBorder(
-                                        borderSide: BorderSide.none),
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: s.height * 0.03,
+                                  height: s.height * 0.01,
                                 ),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -422,17 +494,17 @@ class HomePage extends StatelessWidget {
                                 Icons.dark_mode,
                               ),
                         const Spacer(),
-                        Column(
+                        const Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               "Theme",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const Text(
+                            Text(
                               "Change Theme",
                               style: TextStyle(
                                 fontSize: 12,

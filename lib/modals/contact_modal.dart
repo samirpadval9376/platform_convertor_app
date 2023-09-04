@@ -5,7 +5,7 @@ class Contact {
   String? contact;
   String? chat;
 
-  File? image;
+  String? image;
 
   Contact({
     required this.fullName,

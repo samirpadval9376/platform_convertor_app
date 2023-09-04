@@ -56,7 +56,9 @@ class IosHomePage extends StatelessWidget {
         ),
         tabBuilder: (context, index) {
           return CupertinoTabView(
-            builder: (context) => tabs[index],
+            builder: (context) {
+              return tabs[index];
+            },
           );
         },
       ),

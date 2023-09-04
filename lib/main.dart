@@ -2,6 +2,8 @@ import 'package:device_preview/device_preview.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:platform_convertor_app/controllers/contact_controlller.dart';
+import 'package:platform_convertor_app/controllers/date_time_controller.dart';
 import 'package:platform_convertor_app/controllers/platform_controller.dart';
 import 'package:platform_convertor_app/controllers/profile_controller.dart';
 import 'package:platform_convertor_app/controllers/theme_controller.dart';
@@ -29,6 +31,12 @@ void main() async {
           ChangeNotifierProvider(
             create: (context) => ThemeController(prefs: prefs),
           ),
+          ChangeNotifierProvider(
+            create: (context) => ContactController(preferences: prefs),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => DateTimeController(),
+          ),
         ],
         child: const MyApp(),
       ),
@@ -46,8 +54,10 @@ class MyApp extends StatelessWidget {
             debugShowCheckedModeBanner: false,
             builder: DevicePreview.appBuilder,
             locale: DevicePreview.locale(context),
-            theme: const CupertinoThemeData(
-              brightness: Brightness.light,
+            theme: CupertinoThemeData(
+              brightness: Provider.of<ThemeController>(context).isDark
+                  ? Brightness.dark
+                  : Brightness.light,
             ),
             routes: {
               MyPageRoute.home: (context) => IosHomePage(),
