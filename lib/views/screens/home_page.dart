@@ -283,7 +283,8 @@ class HomePage extends StatelessWidget {
                                   width: s.width * 0.44,
                                 ),
                                 Text(
-                                    "${provider.timeOfDay!.hour}/${provider.dateTime!.minute}"),
+                                  "${(provider.timeOfDay!.hour % 12).toString().padLeft(2, '0')}:${(provider.timeOfDay!.minute).toString().padLeft(2, '0')} ${(provider.timeOfDay!.hour >= 12) ? 'PM' : 'AM'}",
+                                ),
                               ],
                             );
                           },
@@ -326,7 +327,40 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(),
+              SizedBox(
+                width: s.width,
+                child: Consumer<ContactController>(
+                  builder: (context, provider, child) {
+                    return ListView.builder(
+                      itemCount: provider.getAllContacts.length,
+                      itemBuilder: (context, index) => ListTile(
+                        leading: CircleAvatar(
+                          radius: 30,
+                          foregroundImage: FileImage(
+                            File(
+                              provider.getAllContacts[index].image!,
+                            ),
+                          ),
+                        ),
+                        title:
+                            Text("${provider.getAllContacts[index].fullName}"),
+                        subtitle:
+                            Text("${provider.getAllContacts[index].chat}"),
+                        trailing: Consumer<DateTimeController>(
+                          builder: (context, pro, child) {
+                            return Text(
+                              "${pro.dateTime!.day}/${pro.dateTime!.month}/${pro.dateTime!.year} , ${pro.timeOfDay!.hour}:${pro.timeOfDay!.minute}",
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
               SizedBox(
                 width: s.width,
                 child: Consumer<ContactController>(
