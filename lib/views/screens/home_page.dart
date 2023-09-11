@@ -278,9 +278,19 @@ class HomePage extends StatelessWidget {
                                   },
                                   icon: const Icon(Icons.access_time),
                                 ),
-                                const Text("Pick Time"),
-                                SizedBox(
-                                  width: s.width * 0.44,
+                                Expanded(
+                                  child: TextField(
+                                    controller: provider.timeController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Pick Time",
+                                      hintStyle: TextStyle(
+                                        fontSize: 14,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                                 Text(
                                   "${(provider.timeOfDay!.hour % 12).toString().padLeft(2, '0')}:${(provider.timeOfDay!.minute).toString().padLeft(2, '0')} ${(provider.timeOfDay!.hour >= 12) ? 'PM' : 'AM'}",

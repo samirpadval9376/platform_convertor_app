@@ -35,7 +35,7 @@ void main() async {
             create: (context) => ContactController(preferences: prefs),
           ),
           ChangeNotifierProvider(
-            create: (context) => DateTimeController(),
+            create: (context) => DateTimeController(preferences: prefs),
           ),
         ],
         child: const MyApp(),
